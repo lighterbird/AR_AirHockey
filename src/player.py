@@ -133,16 +133,17 @@ class Player:
         corners, ids, rejected = aruco.detectMarkers(gray_frame, self.marker_dict, parameters=self.parameters)
         if ids is not None:
             self.stored_frame = frame
-            self.ids = ids
             self.stored_corners = corners[0][0]
+            return True
         else:
-            self.stored_corners = None
+            return False
     def TrackCornersFromPrev(self, frame):
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         prev_gray_frame = cv2.cvtColor(self.stored_frame, cv2.COLOR_BGR2GRAY)
 
         new_corners, status, error = cv2.calcOpticalFlowPyrLK(prev_gray_frame, gray_frame, self.stored_corners, None)
-        
+        # print(f"stored_corners: {self.stored_corners}\nnew_corners: {new_corners}")
+
         if not np.any(status == 0):
             self.stored_frame = frame
             self.stored_corners = new_corners
@@ -151,9 +152,10 @@ class Player:
     def UpdateCamPoseFromCorners(self):
         frame = self.stored_frame.copy()
         corners = (np.array([self.stored_corners]),)
-
-        aruco.drawDetectedMarkers(frame, corners, self.ids)
-        for i, marker_id in enumerate(self.ids):
+        
+        ids = np.array([[0]])
+        aruco.drawDetectedMarkers(frame, corners, ids)
+        for i, marker_id in enumerate(ids):
             corner = corners[i][0]
             x, y = int(corner[0][0]), int(corner[0][1])
             cv2.putText(frame, f"ID: {marker_id[0]}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
@@ -176,6 +178,7 @@ class Player:
         return frame
     def UpdateFrame(self, frame):
         updated_frame = None
+
         if self.player_control == 0: # Uncalibrated camera: either calibrate or choose from saved cameras
             self.LoadCameras()
             self.player_control = 2
@@ -205,10 +208,10 @@ class Player:
             updated_frame = frame.copy()
             
             # Detect Aruco Marker
-            self.DetectArucoCorners(updated_frame)
+            status = self.DetectArucoCorners(updated_frame)
 
-            # If Marker not detected check for optical flow based tracking
-            if self.stored_corners is not None:
+            # If Marker not detected but previously had been detected check for optical flow based tracking
+            if (self.stored_corners is not None) and (not status):
                 self.TrackCornersFromPrev(updated_frame)
             
             # Finally if corners exist right now, update camera_pose using it
