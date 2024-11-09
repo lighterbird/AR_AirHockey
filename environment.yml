@@ -1,0 +1,24 @@
+name: AR_AirHockey
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.7.13
+  - pip
+  - flask
+  - flask-socketio
+  - opencv-contrib-python
+  - pillow
+  - pygame
+  - pyopengl
+  - pyopengl-accelerate
+  - pyrr
+  - pip:
+      - flask
+      - flask-socketio
+      - opencv-contrib-python
+      - pillow
+      - pygame
+      - pyopengl
+      - pyopengl-accelerate
+      - pyrr

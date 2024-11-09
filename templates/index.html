@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processed Camera Feed</title>
+    <!-- Include Socket.IO library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Processed Camera Feed</h1>
+    <img id="processedImage" style="width:100%;" alt="Processed Frame" />
+
+    <!-- Log status and frame count -->
+    <div id="log" style="margin-top: 20px; font-family: Arial, sans-serif;">
+        <p>Status: <span id="status">Connecting...</span></p>
+        <p>Frames Sent: <span id="frameCount">0</span></p>
+        <p>Debug Info: <span id="debugInfo">N/A</span></p>
+    </div>
+
+    <script>
+        var socket = io.connect();
+        var frameCount = 0;
+
+        // Log status on the webpage
+        function logMessage(message) {
+            document.getElementById('status').innerText = message;
+        }
+
+        // Update frame count on the webpage
+        function updateFrameCount() {
+            frameCount++;
+            document.getElementById('frameCount').innerText = frameCount;
+        }
+
+        // Log debug information
+        function logDebugInfo(info) {
+            document.getElementById('debugInfo').innerText = info;
+            console.log(info);
+        }
+
+        // Handle receiving the processed frame from the server
+        socket.on('processed_frame', function(imageData) {
+            const imgElement = document.getElementById('processedImage');
+            imgElement.src = imageData;
+        });
+
+        // When connection is established, update status
+        socket.on('connect', function() {
+            logMessage("Connected to Flask-SocketIO server.");
+        });
+
+        // Access the phone's camera using getUserMedia
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: "environment" } }  // Request the back camera
+            })
+                .then(function(stream) {
+                    logDebugInfo('Camera access granted.');
+                    var video = document.createElement('video');
+                    video.srcObject = stream;
+                    video.play();
+
+                    var canvas = document.createElement('canvas');
+                    var context = canvas.getContext('2d');
+
+                    function sendFrameToServer() {
+                        // Set lower resolution for the canvas to reduce image size
+                        const targetWidth = 300;  // Adjust as necessary
+                        const targetHeight = video.videoHeight * (targetWidth / video.videoWidth);
+                        
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                        
+                        // Draw the video frame onto the canvas with the lower resolution
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                        // Convert the canvas to a lower-resolution image in JPEG format
+                        var frameData = canvas.toDataURL('image/jpeg', 0.25);  // Adjust quality (0.5 = 50%)
+                        
+                        socket.emit('frame', frameData);
+                        updateFrameCount();
+                    }
+
+                    // Continuously send frames to server every 100ms (adjust as necessary)
+                    setInterval(sendFrameToServer, 75);
+                })
+                .catch(function(error) {
+                    logMessage('Error accessing the camera: ' + error);
+                    logDebugInfo('Camera access failed: ' + error);
+                });
+        } else {
+            logDebugInfo('getUserMedia is not supported in this browser.');
+        }
+    </script>
+</body>
+</html>
