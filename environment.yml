@@ -22,3 +22,4 @@ dependencies:
       - pyopengl
       - pyopengl-accelerate
       - pyrr
+      - tqdm

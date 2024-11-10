@@ -5,6 +5,7 @@ import numpy as np
 from cv2 import aruco
 import pyrr
 import shutil
+from tqdm import tqdm
 from utils.camera_pose_estimation import estimatePoseSingleMarkers, detect_checker_board
 
 
@@ -16,7 +17,7 @@ class Player:
         self.player_camera_pose = None
         self.player_camera_pose_lock = threading.Lock()
         self.player_control = 0
-        self.saved_cameras = self.LoadCameras()
+        # self.saved_cameras = self.LoadCameras()
 
         self.stored_frame = None
         self.stored_corners = None
@@ -29,7 +30,7 @@ class Player:
 
     def LoadCameras(self):
         folder_path = "./saved_cameras"
-        data = np.load("./saved_cameras/calib69yLY_ifw3WoqwzNAAAF.npz")
+        data = np.load("./saved_cameras/calib1h7Ic7u-v1Y1MChmAAAD.npz")
 
         camMatrix = data["camMatrix"]
         distCof = data["distCoef"]
@@ -70,13 +71,14 @@ class Player:
         img_points_2D = []  # 2d points in image plane.
 
         files = os.listdir(calib_images_folder)
-        for i in range(len(files)):
-            if i % 4 != 0:
+        images_used = 0
+        for i in tqdm(range(len(files))):
+            if i % 2 != 0:
                 continue
 
             file = f"img_{i}.png"
             # print(file)
-            imagePath = os.path.join(calib_images_folder, file)
+            imagePath = f"{calib_images_folder}/{file}"
 
             try:
                 image = cv2.imread(imagePath)
@@ -88,10 +90,13 @@ class Player:
                 obj_points_3D.append(obj_3D)
                 corners2 = cv2.cornerSubPix(grayScale, corners, (3, 3), (-1, -1), criteria)
                 img_points_2D.append(corners2)
+                images_used += 1
+
+        print(f"Using {images_used} images for calibration")
 
         # Remove temp images folder
-        shutil.rmtree(calib_images_folder)
-        os.rmdir(calib_images_folder)
+        # shutil.rmtree(calib_images_folder)
+        # os.rmdir(calib_images_folder)
 
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(
             obj_points_3D, img_points_2D, grayScale.shape[::-1], None, None
@@ -161,6 +166,8 @@ class Player:
             cv2.putText(frame, f"ID: {marker_id[0]}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
         rvec, tvec, _ = estimatePoseSingleMarkers(corners, 0.1, self.player_camera_calib_parameters[0], self.player_camera_calib_parameters[1])
+        cv2.drawFrameAxes(frame, self.player_camera_calib_parameters[0], self.player_camera_calib_parameters[1], rvec[0], tvec[0], 0.1 * 0.5)
+
         rvec = rvec[0]
         tvec = 3 * tvec[0]
         tvec = tvec.flatten()
@@ -201,7 +208,7 @@ class Player:
             updated_frame = frame.copy()
             cv2.putText(updated_frame, f"Calibrating: Loading...", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             with self.player_camera_calib_parameters_lock:
-                if self.player_camera_calib_parameters != None:
+                if self.player_camera_calib_parameters is not None:
                     self.player_control = 2
         
         elif self.player_control == 2: # Calibrated, ready to play
