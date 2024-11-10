@@ -1,5 +1,25 @@
 import cv2
 import os
+import numpy as np
+
+
+def overlay_images(image1, image2):
+    # Ensure both images are the same size
+    if image1.shape != image2.shape:
+        raise ValueError("Both images must be of the same shape")
+
+    # Create a mask where `image1` has BGR value (0, 0, 0)
+    mask = (image1[:, :, 0] == 0) & (image1[:, :, 1] == 0) & (image1[:, :, 2] == 0)
+
+    # Create a copy of image2 to overlay the result
+    result = image2.copy()
+
+    # For pixels where the mask is False (i.e., where image1 is not black),
+    # copy the pixels from image1 to result
+    result[~mask] = image1[~mask]
+
+    return result
+
 
 def images_to_video(folder_path, video_name="output_video.mp4", fps=30):
     # Get list of image files in the folder

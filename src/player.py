@@ -8,6 +8,7 @@ import shutil
 from tqdm import tqdm
 from utils.camera_pose_estimation import estimatePoseSingleMarkers, detect_checker_board
 from utils.images_to_video import images_to_video
+from utils.images_to_video import overlay_images
 
 
 class Player:
@@ -21,7 +22,6 @@ class Player:
         self.virtual_view = None
         self.virtual_view_lock = threading.Lock()
         self.virtual_view_count = 0
-        # self.saved_cameras = self.LoadCameras()
 
         self.stored_frame = None
         self.stored_corners = None
@@ -239,6 +239,5 @@ class Player:
             
             with self.virtual_view_lock:
                 if self.virtual_view is not None:
-                    cv2.imwrite(f"{self.calib_folder}/{self.virtual_view_count}.jpg", self.virtual_view)
-                    self.virtual_view_count += 1
+                    updated_frame = overlay_images(self.virtual_view, updated_frame)
         return updated_frame

@@ -26,7 +26,7 @@ class Game:
         # Send current frame to player for updating
         return self.players[client_id].UpdateFrame(frame)
     def RenderThread(self):
-        self.graphics = Graphics(640,480)
+        self.graphics = Graphics(300,400)
         # Scene init
         self.graphics.shaders.append(Shader("renderer/shaders/vertex_phong.glsl", "renderer/shaders/fragment_phong.glsl"))
         self.graphics.cameras.append(Camera(self.graphics.W, self.graphics.H))
