@@ -11,6 +11,8 @@ from renderer.Light import Light
 from renderer.Utils import GLCall
 from renderer.Graphics import Graphics
 
+from utils.images_to_video import images_to_video
+
 
 class Game:
     def __init__(self):
@@ -36,12 +38,10 @@ class Game:
         # Main Loop
         running = True
         while (running):
-            running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
-            # print(keys)
-            # Update scene
+            players = list(self.players.values())
 
+            # Manage inputs
             keys = pg.key.get_pressed()
-
             if keys[pg.K_w]:
                 self.graphics.cameras[0].polar_position[1] -= 0.01
             if keys[pg.K_a]:
@@ -54,25 +54,35 @@ class Game:
                 self.graphics.cameras[0].polar_position[0] += 0.02
             if keys[pg.K_LCTRL]:
                 self.graphics.cameras[0].polar_position[0] -= 0.02
+            # if keys[pg.K_v]:
+            #     images_to_video(players[0].calib_folder, fps=60)
 
+            # Assign Camera Matrix
             viewMat = None
             if len(self.players.keys())>0:
-                players = list(self.players.values())
                 with players[0].player_camera_pose_lock:
                     viewMat = players[0].player_camera_pose
-                # print("viewMat: ", viewMat)
-            # self.graphics.objects[0].rotation[2] += 1
-            # if self.graphics.objects[0].rotation[2] >= 360:
-            #     self.graphics.objects[0].rotation[2] = 0
 
-
+                # Render player's view
+                self.graphics.FrameBuffer.Bind()
+                running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
+                self.graphics.cameras[0].Use(self.graphics.shaders, viewMat)
+                self.graphics.lights[0].Use(self.graphics.shaders)
+                for obj in self.graphics.objects:
+                    obj.Draw()
+                
+                with players[0].virtual_view_lock:
+                    players[0].virtual_view = self.graphics.FrameBuffer.ReadColourBuffer()
+            # Draw scene (2 Pass)
             
-            
-            # Draw scene
+            self.graphics.FrameBuffer.Unbind()
+            running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
             self.graphics.cameras[0].Use(self.graphics.shaders, viewMat)
             self.graphics.lights[0].Use(self.graphics.shaders)
             for obj in self.graphics.objects:
                 obj.Draw()
+            
+
 
             self.graphics.EndFrame(60)
 

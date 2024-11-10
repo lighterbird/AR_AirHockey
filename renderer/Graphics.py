@@ -7,6 +7,7 @@ from renderer.VAO import VertexArray
 from renderer.VBL import VertexBufferLayout
 from renderer.Shader import Shader
 from renderer.Utils import GLCall
+from renderer.FBO import FrameBuffer
 import pygame as pg
 
 class Graphics:
@@ -29,11 +30,15 @@ class Graphics:
         pg.display.set_mode((self.W, self.H), pg.OPENGL|pg.DOUBLEBUF)
 
         self.clock = pg.time.Clock()
+        
         GLCall(glClearColor, 0.0, 0.0, 0.0, 1)
         GLCall(glViewport, 0, 0, self.W, self.H)
         # Enable depth test
         GLCall(glEnable, GL_DEPTH_TEST)
         GLCall(glDepthFunc, GL_LESS)
+
+        # Create FBO to render to
+        self.FrameBuffer = FrameBuffer(self.W, self.H)
     
     def __del__(self):
         pg.quit()

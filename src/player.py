@@ -7,6 +7,7 @@ import pyrr
 import shutil
 from tqdm import tqdm
 from utils.camera_pose_estimation import estimatePoseSingleMarkers, detect_checker_board
+from utils.images_to_video import images_to_video
 
 
 class Player:
@@ -17,6 +18,9 @@ class Player:
         self.player_camera_pose = None
         self.player_camera_pose_lock = threading.Lock()
         self.player_control = 0
+        self.virtual_view = None
+        self.virtual_view_lock = threading.Lock()
+        self.virtual_view_count = 0
         # self.saved_cameras = self.LoadCameras()
 
         self.stored_frame = None
@@ -232,4 +236,9 @@ class Player:
                 cv2.putText(updated_frame, f"{self.player_camera_pose[1]}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
                 cv2.putText(updated_frame, f"{self.player_camera_pose[2]}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
                 cv2.putText(updated_frame, f"{self.player_camera_pose[3]}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            
+            with self.virtual_view_lock:
+                if self.virtual_view is not None:
+                    cv2.imwrite(f"{self.calib_folder}/{self.virtual_view_count}.jpg", self.virtual_view)
+                    self.virtual_view_count += 1
         return updated_frame
