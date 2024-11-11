@@ -64,7 +64,7 @@ def handle_frame(data):
 
         # Convert RGB to BGR for OpenCV
         frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        processed_frame = my_game.UpdateFrame(client_id, frame)
+        processed_frame = my_game.UpdateFrame(client_id, frame, client_flags[client_id])
         processed_frame = np.uint8(np.absolute(processed_frame))
 
         # Send back to client

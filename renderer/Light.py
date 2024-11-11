@@ -12,3 +12,4 @@ class Light:
         for shader in shaders:
             shader.Bind()
             shader.SetUniform3f("lightPosition", self.position[0], self.position[1], self.position[2])
+            shader.SetUniform3f("lightColour", self.colour[0], self.colour[1], self.colour[2])

@@ -32,6 +32,7 @@ class Camera:
         # Setting Camera View Matrix
         if viewMat is not None:
             viewmatrix = viewMat
+            self.position = -(np.dot(viewmatrix, np.array([0.0, 0.0, 0.0, 1]).T))[:3]
         else:
             viewmatrix = pyrr.matrix44.create_look_at(
                 eye = self.position, target = self.targetPoint,
@@ -39,7 +40,7 @@ class Camera:
             
         # Setting Projection matrix
         projectionmatrix = pyrr.matrix44.create_perspective_projection(
-            fovy = self.fovy, aspect = self.width / self.height, 
+            fovy = self.fovy, aspect = max(self.height/self.width, self.width/self.height), 
             near = self.nearPlane, far = self.farPlane, dtype = np.float32).T
 
         # print(f"View: {viewmatrix}\nview[3,2] = {viewmatrix[3,2]}\nProjection: {projectionmatrix}")

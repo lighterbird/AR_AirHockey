@@ -9,13 +9,17 @@ out vec4 FragColor;
 
 // Light and camera position in world space
 uniform vec3 lightPosition;
+uniform vec3 lightColour;
 uniform vec3 cameraPosition;
 
 // Material coefficients
-const vec3 ambientCoefficient = vec3(0.2, 0.2, 0.2);
-const vec3 diffuseCoefficient = vec3(0.5, 0.5, 0.5);
-const vec3 specularCoefficient = vec3(1.0, 1.0, 1.0);
-const float shininess = 32.0;
+
+uniform vec3 ambientCoefficient;
+uniform vec3 diffuseCoefficient;
+uniform vec3 specularCoefficient;
+uniform float shininess;
+uniform vec4 objectColour;
+
 
 void main() {
     // Normalize the normal vector
@@ -38,6 +42,6 @@ void main() {
     vec3 specular = spec * specularCoefficient;
 
     // Combine components
-    vec3 result = ambient + diffuse + specular;
-    FragColor = vec4(result, 1.0);
+    vec4 result = vec4((ambient + (diffuse + specular) * lightColour), 1.0) * objectColour;
+    FragColor = result;
 }

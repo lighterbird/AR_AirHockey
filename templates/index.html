@@ -75,7 +75,7 @@
                     canvas.height = targetHeight;
 
                     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    var frameData = canvas.toDataURL('image/jpeg', 0.25);
+                    var frameData = canvas.toDataURL('image/jpeg', 0.5);
                     
                     socket.emit('frame', frameData);
                 }

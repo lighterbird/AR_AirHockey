@@ -36,9 +36,6 @@ class Graphics:
         # Enable depth test
         GLCall(glEnable, GL_DEPTH_TEST)
         GLCall(glDepthFunc, GL_LESS)
-
-        # Create FBO to render to
-        self.FrameBuffer = FrameBuffer(self.W, self.H)
     
     def __del__(self):
         pg.quit()

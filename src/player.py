@@ -187,7 +187,7 @@ class Player:
             self.player_camera_pose = transformation_matrix
 
         return frame
-    def UpdateFrame(self, frame):
+    def UpdateFrame(self, frame, flags):
         updated_frame = None
 
         if self.player_control == 0: # Uncalibrated camera: either calibrate or choose from saved cameras
