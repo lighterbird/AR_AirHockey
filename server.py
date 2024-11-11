@@ -19,21 +19,34 @@ my_thread = threading.Thread(target=my_game.RenderThread)
 my_thread.start()
 
 # Dictionary to track the state of each control button
-flags = {
-    "up": False,
-    "down": False,
-    "left": False,
-    "right": False,
-    "scaleXPlus": False,
-    "scaleXMinus": False,
-    "scaleYPlus": False,
-    "scaleYMinus": False,
-}
+client_flags = {}
 
 # Route to serve the main HTML page
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@socketio.on('connect')
+def handle_connect():
+    # Initialize flags for this client when they connect
+    client_flags[request.sid] = {
+        'up': False,
+        'down': False,
+        'left': False,
+        'right': False,
+        'scaleXPlus': False,
+        'scaleXMinus': False,
+        'scaleYPlus': False,
+        'scaleYMinus': False
+    }
+    print(f"Client {request.sid} connected.")
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    # Remove this client's flags when they disconnect
+    if request.sid in client_flags:
+        del client_flags[request.sid]
+    print(f"Client {request.sid} disconnected.")
 
 @socketio.on('frame')
 def handle_frame(data):
@@ -67,10 +80,16 @@ def handle_frame(data):
 
 @socketio.on('control')
 def handle_control(data):
+    client_id = request.sid  # Use the unique session ID for the client
     button = data['button']
     is_pressed = data['isPressed']
-    flags[button] = is_pressed
-    print(f"Button {button} is {'pressed' if is_pressed else 'released'}")
+
+    # Update the client's flags dictionary
+    if client_id in client_flags:
+        client_flags[client_id][button] = is_pressed
+
+    # Optional: Print or log the button state change
+    print(f"Client {client_id} - Button '{button}' is {'pressed' if is_pressed else 'released'}")
 
 # Run the app
 if __name__ == "__main__":
