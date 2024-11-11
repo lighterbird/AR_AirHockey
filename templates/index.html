@@ -4,93 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processed Camera Feed</title>
-    <!-- Include Socket.IO library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
 </head>
 <body>
     <h1>Processed Camera Feed</h1>
     <img id="processedImage" style="width:100%;" alt="Processed Frame" />
 
-    <!-- Log status and frame count -->
-    <div id="log" style="margin-top: 20px; font-family: Arial, sans-serif;">
-        <p>Status: <span id="status">Connecting...</span></p>
-        <p>Frames Sent: <span id="frameCount">0</span></p>
-        <p>Debug Info: <span id="debugInfo">N/A</span></p>
+    <div id="controls" style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
+        <button id="up" onmousedown="sendControl('up', true)" onmouseup="sendControl('up', false)" 
+                ontouchstart="sendControl('up', true)" ontouchend="sendControl('up', false)">↑</button>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button id="left" onmousedown="sendControl('left', true)" onmouseup="sendControl('left', false)" 
+                    ontouchstart="sendControl('left', true)" ontouchend="sendControl('left', false)">←</button>
+            <button id="right" onmousedown="sendControl('right', true)" onmouseup="sendControl('right', false)" 
+                    ontouchstart="sendControl('right', true)" ontouchend="sendControl('right', false)">→</button>
+        </div>
+        <button id="down" onmousedown="sendControl('down', true)" onmouseup="sendControl('down', false)" 
+                ontouchstart="sendControl('down', true)" ontouchend="sendControl('down', false)">↓</button>
+    </div>
+
+    <div id="scaleControls" style="display: flex; justify-content: center; gap: 10px; margin-top: 10px;">
+        <button id="scaleXPlus" onmousedown="sendControl('scaleXPlus', true)" onmouseup="sendControl('scaleXPlus', false)" 
+                ontouchstart="sendControl('scaleXPlus', true)" ontouchend="sendControl('scaleXPlus', false)">ScaleX+</button>
+        <button id="scaleXMinus" onmousedown="sendControl('scaleXMinus', true)" onmouseup="sendControl('scaleXMinus', false)" 
+                ontouchstart="sendControl('scaleXMinus', true)" ontouchend="sendControl('scaleXMinus', false)">ScaleX-</button>
+        <button id="scaleYPlus" onmousedown="sendControl('scaleYPlus', true)" onmouseup="sendControl('scaleYPlus', false)" 
+                ontouchstart="sendControl('scaleYPlus', true)" ontouchend="sendControl('scaleYPlus', false)">ScaleY+</button>
+        <button id="scaleYMinus" onmousedown="sendControl('scaleYMinus', true)" onmouseup="sendControl('scaleYMinus', false)" 
+                ontouchstart="sendControl('scaleYMinus', true)" ontouchend="sendControl('scaleYMinus', false)">ScaleY-</button>
     </div>
 
     <script>
         var socket = io.connect();
-        var frameCount = 0;
 
-        // Log status on the webpage
-        function logMessage(message) {
-            document.getElementById('status').innerText = message;
-        }
-
-        // Update frame count on the webpage
-        function updateFrameCount() {
-            frameCount++;
-            document.getElementById('frameCount').innerText = frameCount;
-        }
-
-        // Log debug information
-        function logDebugInfo(info) {
-            document.getElementById('debugInfo').innerText = info;
-            console.log(info);
+        function sendControl(button, isPressed) {
+            socket.emit('control', { button: button, isPressed: isPressed });
         }
 
         // Handle receiving the processed frame from the server
         socket.on('processed_frame', function(imageData) {
-            const imgElement = document.getElementById('processedImage');
-            imgElement.src = imageData;
+            document.getElementById('processedImage').src = imageData;
         });
 
-        // When connection is established, update status
-        socket.on('connect', function() {
-            logMessage("Connected to Flask-SocketIO server.");
-        });
-
-        // Access the phone's camera using getUserMedia
+        // Access the camera and send frames to the server
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { exact: "environment" } }  // Request the back camera
+                video: { facingMode: { exact: "environment" } }
             })
-                .then(function(stream) {
-                    logDebugInfo('Camera access granted.');
-                    var video = document.createElement('video');
-                    video.srcObject = stream;
-                    video.play();
+            .then(function(stream) {
+                var video = document.createElement('video');
+                video.srcObject = stream;
+                video.play();
 
-                    var canvas = document.createElement('canvas');
-                    var context = canvas.getContext('2d');
+                var canvas = document.createElement('canvas');
+                var context = canvas.getContext('2d');
 
-                    function sendFrameToServer() {
-                        // Set lower resolution for the canvas to reduce image size
-                        const targetWidth = 300;  // Adjust as necessary
-                        const targetHeight = video.videoHeight * (targetWidth / video.videoWidth);
-                        
-                        canvas.width = targetWidth;
-                        canvas.height = targetHeight;
-                        
-                        // Draw the video frame onto the canvas with the lower resolution
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                function sendFrameToServer() {
+                    const targetWidth = 300;
+                    const targetHeight = video.videoHeight * (targetWidth / video.videoWidth);
 
-                        // Convert the canvas to a lower-resolution image in JPEG format
-                        var frameData = canvas.toDataURL('image/jpeg', 0.25);  // Adjust quality (0.5 = 50%)
-                        
-                        socket.emit('frame', frameData);
-                        updateFrameCount();
-                    }
+                    canvas.width = targetWidth;
+                    canvas.height = targetHeight;
 
-                    // Continuously send frames to server every 100ms (adjust as necessary)
-                    setInterval(sendFrameToServer, 75);
-                })
-                .catch(function(error) {
-                    logMessage('Error accessing the camera: ' + error);
-                    logDebugInfo('Camera access failed: ' + error);
-                });
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    var frameData = canvas.toDataURL('image/jpeg', 0.25);
+                    
+                    socket.emit('frame', frameData);
+                }
+
+                setInterval(sendFrameToServer, 75);
+            })
+            .catch(function(error) {
+                console.error('Error accessing the camera: ', error);
+            });
         } else {
-            logDebugInfo('getUserMedia is not supported in this browser.');
+            console.error('getUserMedia is not supported in this browser.');
         }
     </script>
 </body>
