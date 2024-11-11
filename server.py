@@ -1,5 +1,3 @@
-from flask import Flask, render_template, request
-from flask_socketio import SocketIO, emit
 import cv2
 import base64
 import numpy as np
@@ -7,8 +5,18 @@ from PIL import Image
 from io import BytesIO
 import threading
 
+from flask import request
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+
+from src.game import Game
+
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+my_game = Game()
+my_thread = threading.Thread(target=my_game.RenderThread)
+my_thread.start()
 
 # Dictionary to track the state of each control button
 flags = {
@@ -63,21 +71,6 @@ def handle_control(data):
     is_pressed = data['isPressed']
     flags[button] = is_pressed
     print(f"Button {button} is {'pressed' if is_pressed else 'released'}")
-
-# Function to simulate game frame processing based on flags (stub for actual game logic)
-def process_game_frame(client_id, frame, flags):
-    # Example processing based on flags (for actual game logic, implement as needed)
-    if flags["up"]:
-        cv2.putText(frame, "Moving UP", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    if flags["down"]:
-        cv2.putText(frame, "Moving DOWN", (50, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    if flags["left"]:
-        cv2.putText(frame, "Moving LEFT", (50, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    if flags["right"]:
-        cv2.putText(frame, "Moving RIGHT", (50, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    # Similar for scale flags...
-
-    return frame
 
 # Run the app
 if __name__ == "__main__":
