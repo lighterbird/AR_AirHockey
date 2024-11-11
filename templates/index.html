@@ -5,9 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Processed Camera Feed</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        /* Prevent text selection for buttons */
+        button {
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none;    /* Firefox */
+            -ms-user-select: none;     /* IE10+/Edge */
+            user-select: none;         /* Standard */
+        }
+    </style>
 </head>
 <body>
-    <h1>Processed Camera Feed</h1>
     <img id="processedImage" style="width:100%;" alt="Processed Frame" />
 
     <div id="controls" style="display: flex; flex-direction: column; align-items: center; margin-top: 20px;">
