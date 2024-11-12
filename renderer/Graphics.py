@@ -32,7 +32,7 @@ class Graphics:
         self.clock = pg.time.Clock()
         
         GLCall(glClearColor, 0.0, 0.0, 0.0, 1)
-        GLCall(glViewport, 0, 0, self.W, self.H)
+        
         # Enable depth test
         GLCall(glEnable, GL_DEPTH_TEST)
         GLCall(glDepthFunc, GL_LESS)

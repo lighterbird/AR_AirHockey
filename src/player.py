@@ -18,6 +18,7 @@ class Player:
         self.player_camera_calib_parameters_lock = threading.Lock()
         self.player_camera_pose = None
         self.player_camera_pose_lock = threading.Lock()
+        self.fy = None
         self.player_control = 0
         self.virtual_view = None
         self.virtual_view_lock = threading.Lock()
@@ -50,6 +51,7 @@ class Player:
 
         with self.player_camera_calib_parameters_lock:
             self.player_camera_calib_parameters = (camMatrix, distCof, rVector, tVector)
+            self.f = camMatrix[1,1]
         # TO DO: Load all npz files from folder_path
     def CalibrateCamera(self, calib_images_folder, calib_save_folder):
         # Checker board size
@@ -158,6 +160,8 @@ class Player:
             self.stored_corners = new_corners
         else:
             self.stored_corners = None
+            with self.player_camera_pose_lock:
+                self.player_camera_pose = None
     def UpdateCamPoseFromCorners(self):
         frame = self.stored_frame.copy()
         corners = (np.array([self.stored_corners]),)

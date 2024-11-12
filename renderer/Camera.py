@@ -3,6 +3,7 @@ import numpy as np
 import ctypes
 import pyrr
 
+from renderer.Utils import GLCall
 
 class Camera:
     def __init__(self, width, height):
@@ -25,7 +26,9 @@ class Camera:
         z = r * np.cos(theta)
 
         return np.array([x, y, z])
-    def Use(self, shaders: list, viewMat = None):
+    def Use(self, shaders: list, viewMat = None, fy = None):
+        GLCall(glViewport, 0, 0, self.width, self.height)
+
         # Set camera pos
         self.position = self.spherical_to_cartesian(self.polar_position)
 
@@ -39,8 +42,12 @@ class Camera:
                 up = self.up, dtype=np.float32).T
             
         # Setting Projection matrix
+        if fy is not None:
+            fovy = 2 * np.arctan(self.height / (2 * fy))  # fovy in radians
+            self.fovy = np.degrees(fovy)
+            
         projectionmatrix = pyrr.matrix44.create_perspective_projection(
-            fovy = self.fovy, aspect = max(self.height/self.width, self.width/self.height), 
+            fovy = self.fovy, aspect = self.width/self.height, 
             near = self.nearPlane, far = self.farPlane, dtype = np.float32).T
 
         # print(f"View: {viewmatrix}\nview[3,2] = {viewmatrix[3,2]}\nProjection: {projectionmatrix}")

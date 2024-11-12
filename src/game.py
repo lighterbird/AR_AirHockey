@@ -27,7 +27,7 @@ class Game:
         # Send current frame to player for updating
         return self.players[client_id].UpdateFrame(frame, flags)
     def RenderThread(self):
-        self.graphics = Graphics(800,600)
+        self.graphics = Graphics(500,500)
         self.FrameBuffer = FrameBuffer(300, 400)
 
         #print("ckpt 1")
@@ -46,7 +46,7 @@ class Game:
         ## Table
         self.graphics.objects.append(Object("renderer/objects/Table_1.obj", self.graphics.shaders[0]))
         self.graphics.objects[0].scale /= 10
-        self.graphics.objects[0].colour = np.array([150/255, 75/255, 1.0, 1.0], dtype=np.float32)
+        self.graphics.objects[0].colour = np.array([150/255, 75/255, 0.0, 1.0], dtype=np.float32)
         self.graphics.objects[0].diffuseCoeff = np.array([0.8, 0.8, 0.8], dtype=np.float32)
         self.graphics.objects[0].specularCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[0].ambientCoeff = np.array([0.1, 0.1, 0.1], dtype=np.float32)
@@ -124,7 +124,7 @@ class Game:
                viewMat = players[0].player_camera_pose
             self.FrameBuffer.Bind()
             running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
-            self.graphics.cameras[1].Use(self.graphics.shaders, viewMat)
+            self.graphics.cameras[1].Use(self.graphics.shaders, viewMat, players[0].fy)
             self.graphics.lights[0].Use(self.graphics.shaders)
             self.graphics.objects[0].Draw()
             if viewMat is not None:
