@@ -33,6 +33,8 @@ class Player:
         self.calib_folder = f"./temp_images/{self.player_id}"
         os.makedirs(self.calib_folder, exist_ok=True)
 
+        self.score = 0
+
     def LoadCameras(self):
         folder_path = "./saved_cameras"
         data = np.load("./saved_cameras/calib1h7Ic7u-v1Y1MChmAAAD.npz")

@@ -18,6 +18,7 @@ from utils.images_to_video import images_to_video
 class Game:
     def __init__(self):
         self.players = {}
+        self.game_state = 0
 
     def UpdateFrame(self, client_id, frame, flags):
         # If new player then add to list of players
@@ -30,17 +31,17 @@ class Game:
         self.graphics = Graphics(500,500)
         self.FrameBuffer = FrameBuffer(300, 400)
 
-        #print("ckpt 1")
+
         # Scene init
         self.graphics.shaders.append(Shader("renderer/shaders/vertex_phong.glsl", "renderer/shaders/fragment_phong.glsl"))
-        #print("ckpt 2")
+
         # Create and set cameras
         self.graphics.cameras.append(Camera(self.graphics.W, self.graphics.H))  # Scene cam
         self.graphics.cameras.append(Camera(300, 400)) # Player 1
         self.graphics.cameras.append(Camera(300, 400)) # Player 2
 
         self.graphics.cameras[0].position = np.array([2.0, 0.0, 0.0], dtype=np.float32)
-        #print("ckpt 3")
+
         # Create and set objects
 
         ## Table
@@ -51,7 +52,7 @@ class Game:
         self.graphics.objects[0].specularCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[0].ambientCoeff = np.array([0.1, 0.1, 0.1], dtype=np.float32)
         self.graphics.objects[0].shine = 10
-        #print("ckpt 4")
+
         ## For cam1
         self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
         self.graphics.objects[1].position = np.array([1000.0, 1000.0, 1000.0], dtype=np.float32)
@@ -60,7 +61,7 @@ class Game:
         self.graphics.objects[1].specularCoeff = np.array([0.6, 0.6, 0.6], dtype=np.float32)
         self.graphics.objects[1].ambientCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[1].shine = 20
-        #print("ckpt 5")
+
         ## for cam2
         self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
         self.graphics.objects[2].position = np.array([1000.0, 1000.0, 1000.0], dtype=np.float32)
@@ -69,25 +70,23 @@ class Game:
         self.graphics.objects[2].specularCoeff = np.array([0.6, 0.6, 0.6], dtype=np.float32)
         self.graphics.objects[2].ambientCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[2].shine = 20
-        #print("ckpt 6")
+
         # Create and set lights
         self.graphics.lights.append(Light())
         self.graphics.lights[0].position = np.array([0.0, 0.0, 3.0])
-        #print("ckpt 7")
+
         # Main Loop
         running = True
         while (running):
             players = list(self.players.values())
-            #print("ckpt 8")
+               
             # Get inputs
             keys = pg.key.get_pressed()
-            #print("ckpt 9")
+
             # Update Scene using inputs and states
             self.UpdateSceneCam(keys)
-            #print("ckpt 10")
+ 
             self.UpdatePlayerCams(keys, players)
-            #print("ckpt 11")
-
             
             # Draw scene
             self.FrameBuffer.Unbind()
