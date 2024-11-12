@@ -9,6 +9,7 @@ from renderer.Shader import Shader
 from renderer.Utils import GLCall
 from renderer.FBO import FrameBuffer
 import pygame as pg
+import sys
 
 class Graphics:
     def __init__(self, W, H):
@@ -36,9 +37,6 @@ class Graphics:
         # Enable depth test
         GLCall(glEnable, GL_DEPTH_TEST)
         GLCall(glDepthFunc, GL_LESS)
-    
-    def __del__(self):
-        pg.quit()
 
     def StartFrame(self, c0: float, c1: float, c2: float, c3: float):
         #check events
@@ -55,5 +53,8 @@ class Graphics:
     def EndFrame(self, fps):
         pg.display.flip()
         self.clock.tick(fps)
+    def ExitPyGame(self):
+        pg.quit()
+        sys.exit()
 
         

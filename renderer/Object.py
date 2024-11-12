@@ -23,6 +23,9 @@ class Object:
         self.ambientCoeff = np.array([1, 1, 1], dtype=np.float32)
         self.shine = 10
 
+        self.objMax = None
+        self.objMin = None
+
         self.modelMatrix = None
 
         vertices, indices = self.LoadObjNormals(obj_file_path)
@@ -69,6 +72,10 @@ class Object:
         temp_vertices = []
         temp_normals = []
         
+        # Initialize objMin and objMax with extreme values
+        objMin = [float('inf'), float('inf'), float('inf')]
+        objMax = [-float('inf'), -float('inf'), -float('inf')]
+
         with open(filepath, 'r') as file:
             for line in file:
                 parts = line.split()
@@ -82,6 +89,15 @@ class Object:
                     position = list(map(float, parts[1:4]))
                     temp_vertices.append(position)
                     
+                    # Update objMin and objMax for bounding box
+                    objMin[0] = min(objMin[0], position[0])
+                    objMin[1] = min(objMin[1], position[1])
+                    objMin[2] = min(objMin[2], position[2])
+                    
+                    objMax[0] = max(objMax[0], position[0])
+                    objMax[1] = max(objMax[1], position[1])
+                    objMax[2] = max(objMax[2], position[2])
+                    
                 # Parse vertex normals
                 elif prefix == 'vn':
                     normal = list(map(float, parts[1:4]))
@@ -92,7 +108,6 @@ class Object:
                     face_indices = []
                     for part in parts[1:]:
                         temp = part.split('//')
-                        #print(temp)
                         v, vn = map(int, temp)
                         # Convert to zero-based index
                         v -= 1
@@ -110,8 +125,16 @@ class Object:
                     
                     # Add triangle indices
                     indices.extend(face_indices)
+        
+        # Flatten the vertices list
         flattened_vertices = [item for sublist in vertices for item in sublist]
+        
+        # Store or return objMin and objMax as needed
+        self.objMin = objMin
+        self.objMax = objMax
+
         return flattened_vertices, indices
+
     def Draw(self, modelMatrix = None):
         if modelMatrix is None:
             # Create the model matrix from position and rotation

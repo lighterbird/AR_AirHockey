@@ -27,10 +27,9 @@ class Game:
         
         # Send current frame to player for updating
         return self.players[client_id].UpdateFrame(frame, flags)
-    def RenderThread(self):
+    def InitializeGameGraphics(self):
         self.graphics = Graphics(500,500)
         self.FrameBuffer = FrameBuffer(300, 400)
-
 
         # Scene init
         self.graphics.shaders.append(Shader("renderer/shaders/vertex_phong.glsl", "renderer/shaders/fragment_phong.glsl"))
@@ -40,12 +39,20 @@ class Game:
         self.graphics.cameras.append(Camera(300, 400)) # Player 1
         self.graphics.cameras.append(Camera(300, 400)) # Player 2
 
-        self.graphics.cameras[0].position = np.array([2.0, 0.0, 0.0], dtype=np.float32)
-
-        # Create and set objects
-
-        ## Table
         self.graphics.objects.append(Object("renderer/objects/Table_1.obj", self.graphics.shaders[0]))
+        self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
+        self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
+        self.graphics.objects.append(Object("renderer/objects/puck.obj", self.graphics.shaders[0]))
+        self.graphics.objects.append(Object("renderer/objects/striker.obj", self.graphics.shaders[0]))
+        self.graphics.objects.append(Object("renderer/objects/striker.obj", self.graphics.shaders[0]))
+        
+        # Create and set lights
+        self.graphics.lights.append(Light())
+        
+    def InitGame(self):
+        self.graphics.lights[0].position = np.array([0.0, 0.0, 3.0])
+        self.graphics.cameras[0].polar_position = np.array([2.0, np.pi/4, np.pi/4], dtype=np.float32)
+
         self.graphics.objects[0].scale /= 10
         self.graphics.objects[0].colour = np.array([150/255, 75/255, 0.0, 1.0], dtype=np.float32)
         self.graphics.objects[0].diffuseCoeff = np.array([0.8, 0.8, 0.8], dtype=np.float32)
@@ -53,8 +60,6 @@ class Game:
         self.graphics.objects[0].ambientCoeff = np.array([0.1, 0.1, 0.1], dtype=np.float32)
         self.graphics.objects[0].shine = 10
 
-        ## For cam1
-        self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
         self.graphics.objects[1].position = np.array([1000.0, 1000.0, 1000.0], dtype=np.float32)
         self.graphics.objects[1].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
         self.graphics.objects[1].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
@@ -62,8 +67,6 @@ class Game:
         self.graphics.objects[1].ambientCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[1].shine = 20
 
-        ## for cam2
-        self.graphics.objects.append(Object("renderer/objects/camera.obj", self.graphics.shaders[0]))
         self.graphics.objects[2].position = np.array([1000.0, 1000.0, 1000.0], dtype=np.float32)
         self.graphics.objects[2].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
         self.graphics.objects[2].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
@@ -71,36 +74,69 @@ class Game:
         self.graphics.objects[2].ambientCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[2].shine = 20
 
-        # Create and set lights
-        self.graphics.lights.append(Light())
-        self.graphics.lights[0].position = np.array([0.0, 0.0, 3.0])
+        self.graphics.objects[3].position = np.array([0.0, 0.0, 0.01], dtype=np.float32)
+        self.graphics.objects[3].scale /= 30
+        self.graphics.objects[3].colour = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32)
+        self.graphics.objects[3].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[3].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
+        self.graphics.objects[3].ambientCoeff = np.array([0.1, 0.1, 0.1], dtype=np.float32)
+        self.graphics.objects[3].shine = 30
+
+        self.graphics.objects[4].position = np.array([self.graphics.objects[3].objMin[0] * self.graphics.objects[3].scale[0] +  abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
+        self.graphics.objects[4].scale /= 30
+        self.graphics.objects[4].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
+        self.graphics.objects[4].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[4].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
+        self.graphics.objects[4].ambientCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[4].shine = 30
+
+        self.graphics.objects[5].position = np.array([-0.5, 0.0, 0.01], dtype=np.float32)
+        self.graphics.objects[5].scale /= 30
+        self.graphics.objects[5].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
+        self.graphics.objects[5].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[5].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
+        self.graphics.objects[5].ambientCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[5].shine = 30
+
+    def UpdateGameState(self):
+        players = list(self.players.values())
+               
+        # Get inputs
+        keys = pg.key.get_pressed()
+
+        # Update Scene using inputs and states
+        self.UpdateSceneCam(keys)
+
+        self.UpdatePlayerCams(keys, players)
+
+    def DrawGameElements(self):
+        self.FrameBuffer.Unbind()
+        running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
+
+        self.graphics.cameras[0].Use(self.graphics.shaders)
+        self.graphics.lights[0].Use(self.graphics.shaders)
+
+        self.graphics.objects[0].Draw()
+        self.graphics.objects[1].Draw(self.graphics.objects[1].modelMatrix)
+        self.graphics.objects[2].Draw(self.graphics.objects[2].modelMatrix)
+        self.graphics.objects[3].Draw()
+        self.graphics.objects[4].Draw()
+        self.graphics.objects[5].Draw()
+
+    def RenderThread(self):
+        self.InitializeGameGraphics()
+        self.InitGame()
 
         # Main Loop
         running = True
         while (running):
-            players = list(self.players.values())
-               
-            # Get inputs
-            keys = pg.key.get_pressed()
-
-            # Update Scene using inputs and states
-            self.UpdateSceneCam(keys)
- 
-            self.UpdatePlayerCams(keys, players)
-            
-            # Draw scene
-            self.FrameBuffer.Unbind()
             running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
-            #print("ckpt 12")
-            self.graphics.cameras[0].Use(self.graphics.shaders)
-            self.graphics.lights[0].Use(self.graphics.shaders)
-            #print("ckpt 13")
-            self.graphics.objects[0].Draw()
-            self.graphics.objects[1].Draw(self.graphics.objects[1].modelMatrix)
-            self.graphics.objects[2].Draw(self.graphics.objects[2].modelMatrix)
-            #print("ckpt 14")
+            self.UpdateGameState()
+            self.DrawGameElements()
             self.graphics.EndFrame(60)
-            #print("ckpt 15")
+
+        self.graphics.ExitPyGame()
+
     def UpdateSceneCam(self, inputs):
         if inputs[pg.K_w]:
             self.graphics.cameras[0].polar_position[1] -= 0.01
