@@ -119,6 +119,7 @@ class Game:
             self.game_state = 0
         elif len(players) == 1:
             self.game_state = 1
+            self.players["temp"] = Player('temp')
         else:
             self.game_state = 2   
         
@@ -145,6 +146,7 @@ class Game:
             self.graphics.objects[4].position = np.array([self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
             self.graphics.objects[5].position = np.array([self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMax[0]) * self.graphics.objects[5].scale[0], 0.0, 0.01], dtype=np.float32)
         if self.game_state == 2:
+            # PLayer 1
             if players[0].flags['up']:
                 self.graphics.objects[4].velocity[0] = 1
             elif players[0].flags['down']:
@@ -160,9 +162,89 @@ class Game:
                 self.graphics.objects[4].velocity[1] = 0
 
             self.graphics.objects[4].position += self.graphics.objects[4].velocity * (1/60)
+
+            if self.graphics.objects[4].position[0] < self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0]:
+                self.graphics.objects[4].position[0] = self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0]
+            if self.graphics.objects[4].position[0] > 0 - abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0]:
+                self.graphics.objects[4].position[0] = 0 - abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0]
+            if self.graphics.objects[4].position[1] < self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[4].objMin[1]) * self.graphics.objects[4].scale[1]:
+                self.graphics.objects[4].position[1] = self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[4].objMin[1]) * self.graphics.objects[4].scale[1]
+            if self.graphics.objects[4].position[1] > self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[4].objMin[1]) * self.graphics.objects[4].scale[1]:
+                self.graphics.objects[4].position[1] = self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[4].objMin[1]) * self.graphics.objects[4].scale[1]
             
+            # Player 2
+            if players[1].flags['up']:
+                self.graphics.objects[5].velocity[0] = -1
+            elif players[1].flags['down']:
+                self.graphics.objects[5].velocity[0] = 1
+            else:
+                self.graphics.objects[5].velocity[0] = 0
             
-        
+            if players[1].flags['left']:
+                self.graphics.objects[5].velocity[1] = -1
+            elif players[1].flags['right']:
+                self.graphics.objects[5].velocity[1] = 1
+            else:
+                self.graphics.objects[5].velocity[1] = 0
+
+            self.graphics.objects[5].position += self.graphics.objects[5].velocity * (1/60)
+
+            if self.graphics.objects[5].position[0] > self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMin[0]) * self.graphics.objects[5].scale[0]:
+                self.graphics.objects[5].position[0] = self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMin[0]) * self.graphics.objects[5].scale[0]
+            if self.graphics.objects[5].position[0] < 0 + abs(self.graphics.objects[5].objMin[0]) * self.graphics.objects[5].scale[0]:
+                self.graphics.objects[5].position[0] = 0 + abs(self.graphics.objects[5].objMin[0]) * self.graphics.objects[5].scale[0]
+            if self.graphics.objects[5].position[1] < self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[5].objMin[1]) * self.graphics.objects[5].scale[1]:
+                self.graphics.objects[5].position[1] = self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[5].objMin[1]) * self.graphics.objects[5].scale[1]
+            if self.graphics.objects[5].position[1] > self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[5].objMin[1]) * self.graphics.objects[5].scale[1]:
+                self.graphics.objects[5].position[1] = self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[5].objMin[1]) * self.graphics.objects[5].scale[1]
+            
+            # Check for collision with striker1
+            r1 = abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0]
+            r2 = abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]
+            x1 = self.graphics.objects[4].position
+            x2 = self.graphics.objects[3].position
+            v1 = self.graphics.objects[4].velocity
+            v2 = self.graphics.objects[3].velocity
+
+            if np.sum((x1-x2)**2) < (r1+r2)**2:
+                collisionVec = (x2 - x1)/np.linalg.norm(x2-x1)
+                self.graphics.objects[3].velocity += max(np.dot(v1, collisionVec), 0) * collisionVec + 2 * max(np.dot(-v2, collisionVec), 0) * collisionVec
+                self.graphics.objects[3].position += collisionVec * max(0, ((r1+r2) - np.linalg.norm(x1-x2)))
+
+            # Check for collision with striker2
+            r1 = abs(self.graphics.objects[5].objMin[0]) * self.graphics.objects[5].scale[0]
+            r2 = abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]
+            x1 = self.graphics.objects[5].position
+            x2 = self.graphics.objects[3].position
+            v1 = self.graphics.objects[5].velocity
+            v2 = self.graphics.objects[3].velocity
+
+            if np.sum((x1-x2)**2) < (r1+r2)**2:
+                collisionVec = (x2 - x1)/np.linalg.norm(x2-x1)
+                self.graphics.objects[3].velocity += max(np.dot(v1, collisionVec), 0) * collisionVec + 2 * max(np.dot(-v2, collisionVec), 0) * collisionVec
+                self.graphics.objects[3].position += collisionVec * max(0, ((r1+r2) - np.linalg.norm(x1-x2)))
+
+            # Check for collision with walls
+            if self.graphics.objects[3].position[0] > self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]:
+                self.graphics.objects[3].position[0] = self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]
+                self.graphics.objects[3].velocity[0] *= -1
+
+            if self.graphics.objects[3].position[0] < self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]:
+                self.graphics.objects[3].position[0] = self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[3].objMin[0]) * self.graphics.objects[3].scale[0]
+                self.graphics.objects[3].velocity[0] *= -1
+            
+            if self.graphics.objects[3].position[1] < self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[3].objMin[1]) * self.graphics.objects[3].scale[1]:
+                self.graphics.objects[3].position[1] = self.graphics.objects[0].objMin[1] * self.graphics.objects[0].scale[1] + abs(self.graphics.objects[3].objMin[1]) * self.graphics.objects[3].scale[1]
+                self.graphics.objects[3].velocity[1] *= -1
+            
+            if self.graphics.objects[3].position[1] > self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[3].objMin[1]) * self.graphics.objects[3].scale[1]:
+                self.graphics.objects[3].position[1] = self.graphics.objects[0].objMax[1] * self.graphics.objects[0].scale[1] - abs(self.graphics.objects[3].objMin[1]) * self.graphics.objects[3].scale[1]
+                self.graphics.objects[3].velocity[1] *= -1
+            
+            # Update puck position
+            self.graphics.objects[3].position += self.graphics.objects[3].velocity * (1/60)
+
+            
         
 
     def DrawGameElements(self):
