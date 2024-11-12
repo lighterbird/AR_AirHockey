@@ -15,6 +15,7 @@ class Object:
 
         # Set object position and rotation (Euler angles)
         self.position = np.array([0, 0, 0], dtype=np.float32)
+        self.velocity = np.array([0, 0, 0], dtype=np.float32)
         self.rotation = np.array([0, 0, 0], dtype=np.float32)
         self.scale = np.array([1, 1, 1], dtype=np.float32)
         self.colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)

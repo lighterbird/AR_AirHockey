@@ -44,6 +44,8 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     # Remove this client's flags when they disconnect
+    client_id = request.sid
+    my_game.RemovePlayer(client_id)
     if request.sid in client_flags:
         del client_flags[request.sid]
     print(f"Client {request.sid} disconnected.")

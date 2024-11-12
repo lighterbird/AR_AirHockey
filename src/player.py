@@ -33,6 +33,16 @@ class Player:
         self.calib_folder = f"./temp_images/{self.player_id}"
         os.makedirs(self.calib_folder, exist_ok=True)
 
+        self.flags = {
+        'up': False,
+        'down': False,
+        'left': False,
+        'right': False,
+        'scaleXPlus': False,
+        'scaleXMinus': False,
+        'scaleYPlus': False,
+        'scaleYMinus': False
+        }
         self.score = 0
 
     def LoadCameras(self):
@@ -195,7 +205,7 @@ class Player:
         return frame
     def UpdateFrame(self, frame, flags):
         updated_frame = None
-
+        self.flags = flags
         if self.player_control == 0: # Uncalibrated camera: either calibrate or choose from saved cameras
             self.LoadCameras()
             self.player_control = 2

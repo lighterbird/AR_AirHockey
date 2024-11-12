@@ -19,7 +19,8 @@ class Game:
     def __init__(self):
         self.players = {}
         self.game_state = 0
-
+    def RemovePlayer(self, player_id):
+        self.players.pop(player_id)
     def UpdateFrame(self, client_id, frame, flags):
         # If new player then add to list of players
         if client_id not in self.players.keys():
@@ -27,6 +28,20 @@ class Game:
         
         # Send current frame to player for updating
         return self.players[client_id].UpdateFrame(frame, flags)
+
+    def RenderThread(self):
+        self.InitializeGameGraphics()
+        self.InitGame()
+
+        # Main Loop
+        running = True
+        while (running):
+            running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
+            self.UpdateGameState()
+            self.DrawGameElements()
+            self.graphics.EndFrame(60)
+
+        self.graphics.ExitPyGame()
     def InitializeGameGraphics(self):
         self.graphics = Graphics(500,500)
         self.FrameBuffer = FrameBuffer(300, 400)
@@ -76,22 +91,22 @@ class Game:
 
         self.graphics.objects[3].position = np.array([0.0, 0.0, 0.01], dtype=np.float32)
         self.graphics.objects[3].scale /= 30
-        self.graphics.objects[3].colour = np.array([0.0, 0.0, 0.0, 1.0], dtype=np.float32)
-        self.graphics.objects[3].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
+        self.graphics.objects[3].colour = np.array([0.1, 0.1, 0.1, 1.0], dtype=np.float32)
+        self.graphics.objects[3].diffuseCoeff = np.array([0.7, 0.7, 0.7], dtype=np.float32)
         self.graphics.objects[3].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
-        self.graphics.objects[3].ambientCoeff = np.array([0.1, 0.1, 0.1], dtype=np.float32)
+        self.graphics.objects[3].ambientCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
         self.graphics.objects[3].shine = 30
 
-        self.graphics.objects[4].position = np.array([self.graphics.objects[3].objMin[0] * self.graphics.objects[3].scale[0] +  abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
         self.graphics.objects[4].scale /= 30
+        self.graphics.objects[4].position = np.array([self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
         self.graphics.objects[4].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
         self.graphics.objects[4].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
         self.graphics.objects[4].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
         self.graphics.objects[4].ambientCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
         self.graphics.objects[4].shine = 30
 
-        self.graphics.objects[5].position = np.array([-0.5, 0.0, 0.01], dtype=np.float32)
         self.graphics.objects[5].scale /= 30
+        self.graphics.objects[5].position = np.array([self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMax[0]) * self.graphics.objects[5].scale[0], 0.0, 0.01], dtype=np.float32)
         self.graphics.objects[5].colour = np.array([1.0, 1.0, 1.0, 1.0], dtype=np.float32)
         self.graphics.objects[5].diffuseCoeff = np.array([0.5, 0.5, 0.5], dtype=np.float32)
         self.graphics.objects[5].specularCoeff = np.array([0.9, 0.9, 0.9], dtype=np.float32)
@@ -100,14 +115,38 @@ class Game:
 
     def UpdateGameState(self):
         players = list(self.players.values())
-               
-        # Get inputs
+        if len(players) == 0:
+            self.game_state = 0
+        elif len(players) == 1:
+            self.game_state = 1
+        else:
+            self.game_state = 2   
+        
         keys = pg.key.get_pressed()
-
-        # Update Scene using inputs and states
         self.UpdateSceneCam(keys)
-
         self.UpdatePlayerCams(keys, players)
+
+        if self.game_state == 1: # Handle scaling
+            if players[0].flags['scaleXPlus']:
+                self.graphics.objects[0].scale[0] += 0.1 * (1/60)
+            if players[0].flags['scaleXMinus']:
+                self.graphics.objects[0].scale[0] -= 0.1 * (1/60)
+            if players[0].flags['scaleYPlus']:
+                self.graphics.objects[0].scale[1] += 0.1 * (1/60)
+                self.graphics.objects[3].scale += 0.1 * (1/60)
+                self.graphics.objects[4].scale += 0.1 * (1/60)
+                self.graphics.objects[5].scale += 0.1 * (1/60)
+            if players[0].flags['scaleYMinus']:
+                self.graphics.objects[0].scale[1] -= 0.1 * (1/60)
+                self.graphics.objects[3].scale -= 0.1 * (1/60)
+                self.graphics.objects[4].scale -= 0.1 * (1/60)
+                self.graphics.objects[5].scale -= 0.1 * (1/60)
+            
+            self.graphics.objects[4].position = np.array([self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
+            self.graphics.objects[5].position = np.array([self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMax[0]) * self.graphics.objects[5].scale[0], 0.0, 0.01], dtype=np.float32)
+        
+        
+        
 
     def DrawGameElements(self):
         self.FrameBuffer.Unbind()
@@ -122,20 +161,6 @@ class Game:
         self.graphics.objects[3].Draw()
         self.graphics.objects[4].Draw()
         self.graphics.objects[5].Draw()
-
-    def RenderThread(self):
-        self.InitializeGameGraphics()
-        self.InitGame()
-
-        # Main Loop
-        running = True
-        while (running):
-            running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
-            self.UpdateGameState()
-            self.DrawGameElements()
-            self.graphics.EndFrame(60)
-
-        self.graphics.ExitPyGame()
 
     def UpdateSceneCam(self, inputs):
         if inputs[pg.K_w]:
@@ -153,7 +178,7 @@ class Game:
     def UpdatePlayerCams(self, inputs, players):
         # Assign Camera Matrix
         viewMat = None
-        if len(players)>0:
+        if self.game_state > 0:
             # Update player 1
             with players[0].player_camera_pose_lock:
                viewMat = players[0].player_camera_pose
@@ -162,23 +187,29 @@ class Game:
             self.graphics.cameras[1].Use(self.graphics.shaders, viewMat, players[0].fy)
             self.graphics.lights[0].Use(self.graphics.shaders)
             self.graphics.objects[0].Draw()
-            if viewMat is not None:
-                self.graphics.objects[1].Draw(np.linalg.inv(viewMat))
-            self.graphics.objects[2].Draw(self.graphics.objects[2].modelMatrix)
+            self.graphics.objects[3].Draw()
+            self.graphics.objects[4].Draw()
+            self.graphics.objects[5].Draw()
+            # if viewMat is not None:
+            #     self.graphics.objects[1].Draw(np.linalg.inv(viewMat))
+            # self.graphics.objects[2].Draw(self.graphics.objects[2].modelMatrix)
             with players[0].virtual_view_lock:
                 players[0].virtual_view = self.FrameBuffer.ReadColourBuffer()
 
             # Update player 2
-            if len(players) > 1:
+            if self.game_state > 1:
                 with players[1].player_camera_pose_lock:
                     viewMat = players[1].player_camera_pose
                 self.FrameBuffer.Bind()
                 running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
-                self.graphics.cameras[2].Use(self.graphics.shaders, viewMat)
+                self.graphics.cameras[2].Use(self.graphics.shaders, viewMat, players[0].fy)
                 self.graphics.lights[0].Use(self.graphics.shaders)
                 self.graphics.objects[0].Draw()
-                self.graphics.objects[1].Draw(self.graphics.objects[1].modelMatrix)
-                if viewMat is not None:
-                    self.graphics.objects[2].Draw(np.linalg.inv(viewMat))
+                self.graphics.objects[3].Draw()
+                self.graphics.objects[4].Draw()
+                self.graphics.objects[5].Draw()
+                # if viewMat is not None:
+                #     self.graphics.objects[1].Draw(np.linalg.inv(viewMat))
+                # self.graphics.objects[2].Draw(self.graphics.objects[2].modelMatrix)
                 with players[1].virtual_view_lock:
                     players[1].virtual_view = self.FrameBuffer.ReadColourBuffer()
