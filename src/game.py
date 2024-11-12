@@ -144,7 +144,24 @@ class Game:
             
             self.graphics.objects[4].position = np.array([self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
             self.graphics.objects[5].position = np.array([self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMax[0]) * self.graphics.objects[5].scale[0], 0.0, 0.01], dtype=np.float32)
-        
+        if self.game_state == 2:
+            if players[0].flags['up']:
+                self.graphics.objects[4].velocity[0] = 1
+            elif players[0].flags['down']:
+                self.graphics.objects[4].velocity[0] = -1
+            else:
+                self.graphics.objects[4].velocity[0] = 0
+            
+            if players[0].flags['left']:
+                self.graphics.objects[4].velocity[1] = 1
+            elif players[0].flags['right']:
+                self.graphics.objects[4].velocity[1] = -1
+            else:
+                self.graphics.objects[4].velocity[1] = 0
+
+            self.graphics.objects[4].position += self.graphics.objects[4].velocity * (1/60)
+            
+            
         
         
 
