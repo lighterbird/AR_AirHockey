@@ -122,7 +122,7 @@ class Object:
             rotation_matrix_x = pyrr.matrix44.create_from_x_rotation(np.radians(self.rotation[0]), dtype=np.float32).T
             rotation_matrix_y = pyrr.matrix44.create_from_y_rotation(np.radians(self.rotation[1]), dtype=np.float32).T
             rotation_matrix_z = pyrr.matrix44.create_from_z_rotation(np.radians(self.rotation[2]), dtype=np.float32).T
-            rotation_matrix = pyrr.matrix44.multiply(m1=rotation_matrix_z, m2=pyrr.matrix44.multiply(m1=rotation_matrix_y, m2=pyrr.matrix44.multiply(rotation_matrix_x, scaling_matrix)))
+            rotation_matrix = pyrr.matrix44.multiply(m1=rotation_matrix_z, m2=pyrr.matrix44.multiply(m1=rotation_matrix_y, m2=rotation_matrix_x))
             
             # Combine the translation, scale and rotation matrices
             self.model_matrix =  pyrr.matrix44.multiply(m1=translation_matrix, m2=pyrr.matrix44.multiply(scaling_matrix, rotation_matrix))

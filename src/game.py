@@ -45,7 +45,7 @@ class Game:
 
         ## Table
         self.graphics.objects.append(Object("renderer/objects/Table_1.obj", self.graphics.shaders[0]))
-        self.graphics.objects[0].scale /= 3
+        self.graphics.objects[0].scale /= 10
         self.graphics.objects[0].colour = np.array([150/255, 75/255, 1.0, 1.0], dtype=np.float32)
         self.graphics.objects[0].diffuseCoeff = np.array([0.8, 0.8, 0.8], dtype=np.float32)
         self.graphics.objects[0].specularCoeff = np.array([0.3, 0.3, 0.3], dtype=np.float32)
