@@ -207,9 +207,9 @@ class Player:
         updated_frame = None
         self.flags = flags
         if self.player_control == 0: # Uncalibrated camera: either calibrate or choose from saved cameras
-            self.LoadCameras()
-            self.player_control = 2
-            return frame
+            # self.LoadCameras()
+            # self.player_control = 2
+            # return frame
         
             ret, updated_frame = detect_checker_board(frame.copy())
             
@@ -217,12 +217,12 @@ class Player:
                 cv2.imwrite(f"{self.calib_folder}/img_{self.calib_images}.png", frame)
                 self.calib_images += 1 
 
-            if self.calib_images == 200:
+            if self.calib_images == 100:
                 self.player_control = 1
                 my_thread = threading.Thread(target=self.CalibrateCamera(self.calib_folder, "./saved_cameras"))
                 my_thread.start()
 
-            cv2.putText(updated_frame, f"Calibrating: {self.calib_images/2} %", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            cv2.putText(updated_frame, f"Calibrating: {self.calib_images} %", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         
         elif self.player_control == 1: # Calibrating camera, wait...
             updated_frame = frame.copy()
@@ -255,5 +255,8 @@ class Player:
             
             with self.virtual_view_lock:
                 if self.virtual_view is not None:
+                    # cv2.imwrite(f"{self.calib_folder}/1.jpg", updated_frame)
+                    # cv2.imwrite(f"{self.calib_folder}/2.jpg", self.virtual_view)
                     updated_frame = overlay_images(self.virtual_view, updated_frame)
+                    # cv2.imwrite(f"{self.calib_folder}/3.jpg", updated_frame)
         return updated_frame

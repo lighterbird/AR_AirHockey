@@ -32,11 +32,12 @@ class Game:
         # Send current frame to player for updating
         updated_frame = self.players[client_id].UpdateFrame(frame, flags)
 
-        if self.game_state == 1:
-            cv2.putText(updated_frame, f"Scale Table Accordingly", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-        if self.game_state == 2:
-            cv2.putText(updated_frame, f"Player 1 Score: {self.scores[0]}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
-            cv2.putText(updated_frame, f"Player 2 Score: {self.scores[1]}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        if self.players[client_id].player_control == 2:
+            if self.game_state == 1:
+                cv2.putText(updated_frame, f"Scale Table Accordingly", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            if self.game_state == 2:
+                cv2.putText(updated_frame, f"Player 1 Score: {self.scores[0]}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2)
+                cv2.putText(updated_frame, f"Player 2 Score: {self.scores[1]}", (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
         return updated_frame
     def RenderThread(self):
@@ -139,7 +140,7 @@ class Game:
         self.UpdateSceneCam(keys)
         self.UpdatePlayerCams(keys, players)
 
-        if self.game_state == 1: # Handle scaling
+        if self.game_state == 1 and players[0].player_control == 2: # Handle scaling
             if players[0].flags['scaleXPlus']:
                 self.graphics.objects[0].scale[0] += 0.1 * (1/60)
             if players[0].flags['scaleXMinus']:
@@ -157,7 +158,7 @@ class Game:
             
             self.graphics.objects[4].position = np.array([self.graphics.objects[0].objMin[0] * self.graphics.objects[0].scale[0] + abs(self.graphics.objects[4].objMin[0]) * self.graphics.objects[4].scale[0], 0.0, 0.01], dtype=np.float32)
             self.graphics.objects[5].position = np.array([self.graphics.objects[0].objMax[0] * self.graphics.objects[0].scale[0] - abs(self.graphics.objects[5].objMax[0]) * self.graphics.objects[5].scale[0], 0.0, 0.01], dtype=np.float32)
-        if self.game_state == 2:
+        if self.game_state == 2 and players[0].player_control == 2 and players[1].player_control == 2:
             # PLayer 1
             if players[0].flags['up']:
                 self.graphics.objects[4].velocity[0] = 1
@@ -285,7 +286,7 @@ class Game:
 
     def DrawGameElements(self):
         self.FrameBuffer.Unbind()
-        running = self.graphics.StartFrame(0.0, 0.0, 0.0, 1)
+        running = self.graphics.StartFrame(135/255, 206/255, 235/255, 1)
 
         self.graphics.cameras[0].Use(self.graphics.shaders)
         self.graphics.lights[0].Use(self.graphics.shaders)

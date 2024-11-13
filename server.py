@@ -91,7 +91,7 @@ def handle_control(data):
         client_flags[client_id][button] = is_pressed
 
     # Optional: Print or log the button state change
-    # print(f"Client {client_id} - Button '{button}' is {'pressed' if is_pressed else 'released'}")
+    print(f"Client {client_id} - Button '{button}' is {'pressed' if is_pressed else 'released'}")
 
 # Run the app
 if __name__ == "__main__":
