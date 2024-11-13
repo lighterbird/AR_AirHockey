@@ -179,7 +179,7 @@ class Player:
         corners = (np.array([self.stored_corners]),)
         
         ids = np.array([[0]])
-        aruco.drawDetectedMarkers(frame, corners, ids)
+        # aruco.drawDetectedMarkers(frame, corners, ids)
         for i, marker_id in enumerate(ids):
             corner = corners[i][0]
             x, y = int(corner[0][0]), int(corner[0][1])
@@ -245,13 +245,13 @@ class Player:
             if self.stored_corners is not None:
                 updated_frame = self.UpdateCamPoseFromCorners()
 
-            cv2.putText(updated_frame, f"Ready to Play!", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-            cv2.putText(updated_frame, f"Camera Matrix: ", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
-            if self.player_camera_pose is not None:
-                cv2.putText(updated_frame, f"{self.player_camera_pose[0]}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                cv2.putText(updated_frame, f"{self.player_camera_pose[1]}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                cv2.putText(updated_frame, f"{self.player_camera_pose[2]}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
-                cv2.putText(updated_frame, f"{self.player_camera_pose[3]}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            # cv2.putText(updated_frame, f"Ready to Play!", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            # cv2.putText(updated_frame, f"Camera Matrix: ", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
+            # if self.player_camera_pose is not None:
+            #     cv2.putText(updated_frame, f"{self.player_camera_pose[0]}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            #     cv2.putText(updated_frame, f"{self.player_camera_pose[1]}", (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            #     cv2.putText(updated_frame, f"{self.player_camera_pose[2]}", (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
+            #     cv2.putText(updated_frame, f"{self.player_camera_pose[3]}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 1)
             
             with self.virtual_view_lock:
                 if self.virtual_view is not None:
